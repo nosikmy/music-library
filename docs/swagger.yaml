@@ -1,0 +1,318 @@
+basePath: /
+definitions:
+  errors.MusicLibraryError:
+    properties:
+      message:
+        example: bad request error
+        type: string
+      status:
+        example: 400
+        type: integer
+    type: object
+  models.AddSongResponse:
+    properties:
+      message:
+        example: ok
+        type: string
+      payload:
+        properties:
+          id:
+            example: 48
+            type: integer
+        type: object
+      status:
+        example: "200"
+        type: string
+    type: object
+  models.ApiMusicRequest:
+    properties:
+      group:
+        type: string
+      song:
+        type: string
+    type: object
+  models.Group:
+    properties:
+      groupId:
+        example: 26
+        type: integer
+      groupName:
+        example: Muse
+        type: string
+    type: object
+  models.LibraryResponse:
+    properties:
+      message:
+        example: ok
+        type: string
+      payload:
+        properties:
+          count:
+            example: 10
+            type: integer
+          library:
+            items:
+              $ref: '#/definitions/models.Song'
+            type: array
+        type: object
+      status:
+        example: "200"
+        type: string
+    type: object
+  models.Response:
+    properties:
+      message:
+        example: ok
+        type: string
+      payload:
+        example: "null"
+        type: string
+      status:
+        example: 200
+        type: integer
+    type: object
+  models.Song:
+    properties:
+      groups:
+        items:
+          $ref: '#/definitions/models.Group'
+        type: array
+      id:
+        example: 458
+        type: integer
+      link:
+        example: https://www.youtube.com/watch?v=Xsp3_a-PMTw
+        type: string
+      name:
+        example: Supermassive Black Hole
+        type: string
+      releaseDate:
+        example: 16.07.2006
+        type: string
+    type: object
+  models.SongTextResponse:
+    properties:
+      message:
+        example: ok
+        type: string
+      payload:
+        properties:
+          count:
+            example: 5
+            type: integer
+          text:
+            items:
+              $ref: '#/definitions/models.Song'
+            type: array
+        type: object
+      status:
+        example: "200"
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: API Server for Music Library Service
+  title: Music Library
+  version: "1.0"
+paths:
+  /library:
+    get:
+      description: |-
+        Supports pagination(limit, page params)
+        Supports filtration(search, dateFrom, dateTo params)
+      parameters:
+      - default: 10
+        description: limit of received data
+        example: 10
+        in: query
+        name: limit
+        type: integer
+      - default: 0
+        description: page of data that you want to receive
+        example: 2
+        in: query
+        name: page
+        type: integer
+      - description: search query for filtering by song and group names
+        in: query
+        name: search
+        type: string
+      - description: the date from which the release dates of the songs begin
+        in: query
+        name: dateFrom
+        type: string
+      - description: the date from which the release dates of the songs end
+        in: query
+        name: dateTo
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.LibraryResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.MusicLibraryError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.MusicLibraryError'
+      summary: Get a list of songs
+      tags:
+      - library
+  /song:
+    delete:
+      parameters:
+      - description: id of the chosen song
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.MusicLibraryError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.MusicLibraryError'
+      summary: Delete a certain song
+      tags:
+      - song
+    post:
+      parameters:
+      - description: Data for adding a song
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/models.ApiMusicRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.AddSongResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.MusicLibraryError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.MusicLibraryError'
+      summary: Add a song to the library
+      tags:
+      - song
+    put:
+      description: Fields will be changed if the required parameters for this are
+        specified
+      parameters:
+      - description: id of the chosen song
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: new name for song
+        in: query
+        name: name
+        type: string
+      - description: new group name to add to the song
+        in: query
+        name: newGroup
+        type: string
+      - description: id of the group to be deleted from the song
+        in: query
+        name: groupToDelete
+        type: string
+      - description: verse id, after which a new verse should be inserted. id = 0
+          - for insertion at the beginning
+        in: query
+        name: newVersePrevId
+        type: string
+      - description: text for a new verse
+        in: query
+        name: newVerseText
+        type: string
+      - description: id of the verse whose text must be changed
+        in: query
+        name: verseId
+        type: string
+      - description: new text for a verse
+        in: query
+        name: verseText
+        type: string
+      - description: id of the verse to be deleted
+        in: query
+        name: deleteVerseId
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.MusicLibraryError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.MusicLibraryError'
+      summary: change all fields of a song
+      tags:
+      - song
+  /song/{id}/text:
+    get:
+      description: Supports pagination(limit, page params)
+      parameters:
+      - description: id of the chosen song
+        in: path
+        name: id
+        required: true
+        type: integer
+      - default: 2
+        description: limit of received data
+        example: 2
+        in: query
+        name: limit
+        type: integer
+      - default: 0
+        description: page of data that you want to receive
+        example: 1
+        in: query
+        name: page
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.SongTextResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.MusicLibraryError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.MusicLibraryError'
+      summary: Get the verses for a certain song
+      tags:
+      - song
+swagger: "2.0"

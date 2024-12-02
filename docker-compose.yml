@@ -1,0 +1,43 @@
+services:
+  music-library:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    container_name: music-library
+    restart: unless-stopped
+    ports:
+      - "${BIND_ADDR}:${BIND_ADDR}"
+    depends_on:
+      - postgres-db
+    networks:
+      - appnet
+
+  postgres-db:
+    image: postgres:alpine3.20
+    container_name: postgres-db
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-U", "${DB_USERNAME}", "-d", "${DB_NAME}", "-p", "${DB_PORT}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    volumes:
+      - db_tmp:/var/lib/postgresql/data
+    command: -p ${DB_PORT}
+    ports:
+      - ${DB_PORT}:${DB_PORT} # delete
+    environment:
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    networks:
+      - appnet
+
+volumes:
+  db_tmp:
+
+networks:
+  appnet:
+    name: appnet
+    driver: bridge
